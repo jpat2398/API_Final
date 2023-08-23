@@ -1,5 +1,7 @@
 package pages;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class BasePage {
@@ -22,5 +24,11 @@ public class BasePage {
             sb.append(characters.charAt(randomIndex));
         }
         return sb.toString();
+    }
+
+    public static Map getCookiesData(){
+        Map <String,String> cookie=new HashMap<String, String>();
+        cookie.put("PHPSESSID", "vj4lpguma0jcc37fhq2ujpk8c9");
+        return cookie;
     }
 }
