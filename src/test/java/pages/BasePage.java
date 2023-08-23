@@ -1,5 +1,8 @@
 package pages;
 
+import io.restassured.RestAssured;
+import io.restassured.specification.RequestSpecification;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -31,4 +34,7 @@ public class BasePage {
         cookie.put("PHPSESSID", "vj4lpguma0jcc37fhq2ujpk8c9");
         return cookie;
     }
+
+
+
 }
