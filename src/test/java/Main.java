@@ -17,12 +17,16 @@ import pages.BasePage;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static io.restassured.RestAssured.when;
 
 import static io.restassured.RestAssured.baseURI;
 
 public class Main {
+    private static final Logger logger = LogManager.getLogger(Main.class);
+
     private BasePage basePage = new BasePage();
 
     @BeforeClass
@@ -38,6 +42,7 @@ public class Main {
 
     @Test
     public void loginFunctionality() {
+        logger.info("loginFunctionality test started....");
         CookieFilter cookieFilter = new CookieFilter();
         Map<String, String> loginDetails = new HashMap<String, String>();
         loginDetails.put("back", "my-account");
@@ -60,6 +65,8 @@ public class Main {
         System.out.println(getMyAccount.getBody().prettyPrint());
         System.out.println(cookieFilter.getCookieStore());
         Assert.assertEquals("My account", getMyAccount.body().htmlPath().getString("html.head.title"));
+        logger.info("loginFunctionality test ended....");
+
     }
 
     @Test
