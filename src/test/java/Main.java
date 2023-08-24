@@ -31,7 +31,7 @@ public class Main {
     @Test
     public void checkEndpoint(){
         Response response = RestAssured.get(basePage.generatePath());
-        response.then().assertThat().statusCode(404);
+g        response.then().assertThat().statusCode(404);
     }
 
     @Test
