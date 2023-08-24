@@ -3,6 +3,7 @@ import io.restassured.filter.cookie.CookieFilter;
 import io.restassured.http.Method;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import io.restassured.http.ContentType;
@@ -56,6 +57,7 @@ public class Main {
                 .get("index.php");
         System.out.println(getMyAccount.getBody().prettyPrint());
         System.out.println(cookieFilter.getCookieStore());
+        Assert.assertEquals("My account", getMyAccount.body().htmlPath().getString("html.head.title"));
     }
 
 }
