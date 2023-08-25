@@ -29,11 +29,6 @@ public class BasePage {
         return sb.toString();
     }
 
-    public static Map getCookiesData(){
-        Map <String,String> cookie=new HashMap<String, String>();
-        cookie.put("PHPSESSID", "vj4lpguma0jcc37fhq2ujpk8c9");
-        return cookie;
-    }
 
 
 

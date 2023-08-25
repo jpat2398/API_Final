@@ -4,30 +4,34 @@ import io.restassured.http.Method;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import io.restassured.http.ContentType;
 
+import static groovy.json.JsonOutput.prettyPrint;
+import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.equalTo;
 
 import io.restassured.matcher.RestAssuredMatchers.*;
 import pages.BasePage;
+import pages.CartPage;
+import pages.HomePage;
+import pages.LoginPage;
 //import io.restassured.module.jsv.JsonSchemaValidator.*;
 //import io.restassured.module.mockmvc.RestAssuredMockMvc.*;
-
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static io.restassured.RestAssured.when;
-
-import static io.restassured.RestAssured.baseURI;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Main {
-    private static final Logger logger = LogManager.getLogger(Main.class);
-
     private BasePage basePage = new BasePage();
+    private HomePage homePage = new HomePage();
+
+    private CartPage cartPage = new CartPage();
+    private LoginPage loginPage = new LoginPage();
 
     @BeforeClass
     public static void setUp() {
@@ -35,63 +39,79 @@ public class Main {
     }
 
     @Test
-    public void checkEndpoint() {
+    public void invalidURLTest() {
         Response response = RestAssured.get(basePage.generatePath());
-       response.then().assertThat().statusCode(404);
+        response.then().assertThat().statusCode(404);
+        System.out.println("Status code: 404. Page not found");
     }
 
     @Test
-    public void loginFunctionality() {
-        logger.info("loginFunctionality test started....");
+    public void loginFunctionalityTest() {
         CookieFilter cookieFilter = new CookieFilter();
-        Map<String, String> loginDetails = new HashMap<String, String>();
-        loginDetails.put("back", "my-account");
-        loginDetails.put("email", "hhbrother@gmail.com");
-        loginDetails.put("password", "password");
-        loginDetails.put("submitLogin", "1");
-        Response response = RestAssured
-                .given().filter(cookieFilter)
-                .queryParam("controller", "authentication")
-                .queryParam("back", "my-account")
-                .formParams(loginDetails)
-                .when()
-                .post("index.php");
-        System.out.println(response.statusCode());
-        System.out.println(cookieFilter.getCookieStore());
-        Response getMyAccount = RestAssured
-                .given().filter(cookieFilter)
+        loginPage.loginPostRequest(cookieFilter, "hhbrother@gmail.com", "password");
+        Response getMyAccount = given()
+                .filter(cookieFilter)
                 .queryParam("controller", "my-account")
                 .get("index.php");
-        System.out.println(getMyAccount.getBody().prettyPrint());
-        System.out.println(cookieFilter.getCookieStore());
+        getMyAccount.then().assertThat().statusCode(200);
         Assert.assertEquals("My account", getMyAccount.body().htmlPath().getString("html.head.title"));
-        logger.info("loginFunctionality test ended....");
+        System.out.println("Test Passed. User login successful.");
 
     }
 
     @Test
-    public void loginNotValid() {
+    public void loginNotValidTest() {
         CookieFilter cookieFilter = new CookieFilter();
-        Map<String, String> loginDetails = new HashMap<String, String>();
-        loginDetails.put("back", "my-account");
-        loginDetails.put("email", "failtest@mail.com");
-        loginDetails.put("password", "failtest");
-        loginDetails.put("submitLogin", "1");
-        Response response = RestAssured
-                .given().filter(cookieFilter)
-                .queryParam("controller", "authentication")
-                .queryParam("back", "my-account")
-                .formParams(loginDetails)
-                .when()
-                .post("index.php");
-        System.out.println(response.statusCode());
-        System.out.println(cookieFilter.getCookieStore());
-        Response getMyAccount = RestAssured
-                .given().filter(cookieFilter)
+        loginPage.loginPostRequest(cookieFilter, "failtest@mail.com", "failtest");
+        Response getMyAccount =
+                given()
+                .filter(cookieFilter)
                 .queryParam("controller", "my-account")
                 .get("index.php");
-        System.out.println(getMyAccount.getBody().prettyPrint());
-        System.out.println(cookieFilter.getCookieStore());
+        getMyAccount.then().assertThat().statusCode(200);
         Assert.assertEquals("Login", getMyAccount.body().htmlPath().getString("html.head.title"));
+        System.out.println("Test passed. User login unsuccessful.");
     }
+
+    @Test
+    public void addItemToCartTest() {
+        CookieFilter cookieFilter = new CookieFilter();
+
+        homePage.productGetRequest(cookieFilter, "**.findAll { it.@name == 'token' }.@value");
+
+        Response cartPost = RestAssured.given()
+                .filter(cookieFilter)
+                .queryParam("controller", "cart")
+                .formParams(cartPage.cartItemFormData("1"))
+                .when()
+                .post("index.php");
+        cartPost.then().assertThat().statusCode(200);
+        String cartItem = cartPost.body().htmlPath().getString("**.findAll { it.@class == 'cart-products-count' }");
+        String cartItemQuantityString = cartItem.replace("(", "").replace(")", "");
+        int cartItemQuantity = Integer.parseInt(cartItemQuantityString);
+        Assert.assertTrue(cartItemQuantity > 0);
+        System.out.printf("Test passed. There are %s item(s) in the basket.", cartItemQuantity);
+    }
+    @Test
+    public void addMultipleItemsToCartTest() {
+        CookieFilter cookieFilter = new CookieFilter();
+
+        homePage.productGetRequest(cookieFilter, "**.findAll { it.@name == 'token' }.@value");
+
+        //Get POST Response
+        Response cartPost = RestAssured.given()
+                .filter(cookieFilter)
+                .queryParam("controller", "cart")
+                .formParams(cartPage.cartItemFormData("2"))
+                .when()
+                .post("index.php");
+        cartPost.then().assertThat().statusCode(200);
+        String cartItem = cartPost.body().htmlPath().getString("**.findAll { it.@class == 'cart-products-count' }");
+        String cartItemQuantityString = cartItem.replace("(", "").replace(")", "");
+        int cartItemQuantity = Integer.parseInt(cartItemQuantityString);
+        Assert.assertTrue(cartItemQuantity > 0);
+        System.out.printf("Test passed. There are %s item(s) in the basket.", cartItemQuantity);
 }
+
+
+    }
