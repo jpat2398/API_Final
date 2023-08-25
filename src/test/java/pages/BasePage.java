@@ -1,10 +1,5 @@
 package pages;
 
-import io.restassured.RestAssured;
-import io.restassured.specification.RequestSpecification;
-
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 public class BasePage {
@@ -28,8 +23,4 @@ public class BasePage {
         }
         return sb.toString();
     }
-
-
-
-
 }
