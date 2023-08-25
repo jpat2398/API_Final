@@ -20,6 +20,8 @@ import pages.HomePage;
 import pages.LoginPage;
 //import io.restassured.module.jsv.JsonSchemaValidator.*;
 //import io.restassured.module.mockmvc.RestAssuredMockMvc.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
