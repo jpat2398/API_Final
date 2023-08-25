@@ -10,9 +10,23 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class RegistrationPage {
+
+    public Map registrationFormData(String email) {
+        HashMap<String, String> newUserCreds = new HashMap<String, String>();
+        newUserCreds.put("id_customer", "");
+        newUserCreds.put("id_gender", "1");
+        newUserCreds.put("firstname", "Tester");
+        newUserCreds.put("lastname", "McTestFace");
+        newUserCreds.put("email", email);
+        newUserCreds.put("password", "Password1");
+        newUserCreds.put("birthday", "05/24/2000");
+        newUserCreds.put("submitCreate", "1");
+        return newUserCreds;
+    }
 
 
     public String emailRandomiser() {
