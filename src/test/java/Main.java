@@ -43,6 +43,8 @@ public class Main {
     @Test
     public void invalidURLTest() {
         Response response = RestAssured.get(basePage.generatePath());
+
+        //Assert that page is not found.
         response.then().assertThat().statusCode(404);
         System.out.println("Status code: 404. Page not found");
     }
@@ -55,7 +57,11 @@ public class Main {
                 .filter(cookieFilter)
                 .queryParam("controller", "my-account")
                 .get("index.php");
+
+        //Assert status code 200.
         getMyAccount.then().assertThat().statusCode(200);
+
+        //Assert user is logged in.
         Assert.assertEquals("My account", getMyAccount.body().htmlPath().getString("html.head.title"));
         System.out.println("Test Passed. User login successful.");
 
@@ -70,7 +76,11 @@ public class Main {
                         .filter(cookieFilter)
                         .queryParam("controller", "my-account")
                         .get("index.php");
+
+        //Assert status code 200.
         getMyAccount.then().assertThat().statusCode(200);
+
+        //Assert user is not logged in.
         Assert.assertEquals("Login", getMyAccount.body().htmlPath().getString("html.head.title"));
         System.out.println("Test passed. User login unsuccessful.");
     }
@@ -87,10 +97,14 @@ public class Main {
                 .formParams(cartPage.cartItemFormData("1"))
                 .when()
                 .post("index.php");
+
+        //Assert status code 200.
         cartPost.then().assertThat().statusCode(200);
         String cartItem = cartPost.body().htmlPath().getString("**.findAll { it.@class == 'cart-products-count' }");
         String cartItemQuantityString = cartItem.replace("(", "").replace(")", "");
         int cartItemQuantity = Integer.parseInt(cartItemQuantityString);
+
+        //Assert for basket item.
         Assert.assertTrue(cartItemQuantity > 0);
         System.out.printf("Test passed. There are %s item(s) in the basket.", cartItemQuantity);
     }
@@ -101,75 +115,60 @@ public class Main {
 
         homePage.productGetRequest(cookieFilter, "**.findAll { it.@name == 'token' }.@value");
 
-        //Get POST Response
         Response cartPost = RestAssured.given()
                 .filter(cookieFilter)
                 .queryParam("controller", "cart")
                 .formParams(cartPage.cartItemFormData("2"))
                 .when()
                 .post("index.php");
+
+        //Assert status code 200.
         cartPost.then().assertThat().statusCode(200);
         String cartItem = cartPost.body().htmlPath().getString("**.findAll { it.@class == 'cart-products-count' }");
         String cartItemQuantityString = cartItem.replace("(", "").replace(")", "");
         int cartItemQuantity = Integer.parseInt(cartItemQuantityString);
-        Assert.assertTrue(cartItemQuantity > 0);
+
+        //Assert multiple items are in basket.
+        Assert.assertTrue(cartItemQuantity > 1);
         System.out.printf("Test passed. There are %s item(s) in the basket.", cartItemQuantity);
 
 
     }
     @Test
-    public void registerANewUser() {
+    public void registerANewUserTest() {
         CookieFilter cookieFilter = new CookieFilter();
-        HashMap<String, String> newUserCreds = new HashMap<String, String>();
-        newUserCreds.put("id_customer", "");
-        newUserCreds.put("id_gender", "1");
-        newUserCreds.put("firstname", "Tester");
-        newUserCreds.put("lastname", "McTestFace");
-        newUserCreds.put("email", registrationPage.emailRandomiser());
-        newUserCreds.put("password", "Password1");
-        newUserCreds.put("birthday", "05/24/2000");
-        newUserCreds.put("submitCreate", "1");
-        Response response = RestAssured
+        Response registrationPost = RestAssured
                 .given().filter(cookieFilter)
                 .queryParam("controller", "authentication")
                 .queryParam("create_account", "1")
-                .formParams(newUserCreds)
+                .formParams(registrationPage.registrationFormData(registrationPage.emailRandomiser()))
                 .when()
                 .post("?controller=authentication&create_account=1");
-        System.out.println(response.statusCode());
-        System.out.println(cookieFilter.getCookieStore());
+
+
         Response getNewAccount = RestAssured
                 .given().filter(cookieFilter)
                 .queryParam("controller", "authentication")
                 .queryParam("create_account", "1")
                 .get("?controller=authentication&create_account=1");
-        System.out.println(getNewAccount.getBody().prettyPrint());
-        System.out.println(cookieFilter.getCookieStore());
+
+        //Assert account has been created.
         Assert.assertEquals("Tester McTestFace", getNewAccount.body().htmlPath().getString("**.findAll { it.@class== 'user-info' }.a.span"));
     }
 
     @Test
-    public void alreadyRegisteredUser() {
+    public void alreadyRegisteredUserTest() {
 
         CookieFilter cookieFilter = new CookieFilter();
-        HashMap<String, String> newUserCreds = new HashMap<String, String>();
-        newUserCreds.put("id_customer", "");
-        newUserCreds.put("id_gender", "1");
-        newUserCreds.put("firstname", "Tester");
-        newUserCreds.put("lastname", "McTestFace");
-        newUserCreds.put("email", "tester@test.com");
-        newUserCreds.put("password", "Password1");
-        newUserCreds.put("birthday", "05/24/2000");
-        newUserCreds.put("submitCreate", "1");
         Response response = RestAssured
                 .given().filter(cookieFilter)
                 .queryParam("controller", "authentication")
                 .queryParam("create_account", "1")
-                .formParams(newUserCreds)
+                .formParams(registrationPage.registrationFormData("tester@test.com"))
                 .when()
                 .post("?controller=authentication&create_account=1");
-        System.out.println(response.statusCode());
-        System.out.println(cookieFilter.getCookieStore());
+
+        //Assert for account already in use message.
         Assert.assertEquals("The email \"tester@test.com\" is already used, please choose another one or sign in",
                 response.body().htmlPath().getString("**.findAll { it.@class== 'help-block' }.ul.li"));
     }
