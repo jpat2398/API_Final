@@ -16,8 +16,10 @@ public class RegistrationPage {
 
 
     private BasePage basePage = new BasePage();
+    HomePage homePage = new HomePage();
+
     @BeforeClass
-    public static void basePageSetup (){
+    public static void basePageSetup() {
         RestAssured.baseURI = "http://3.11.77.136/";
 
     }
@@ -52,8 +54,8 @@ public class RegistrationPage {
         System.out.println(cookieFilter.getCookieStore());
         Response getNewAccount = RestAssured
                 .given().filter(cookieFilter)
-                 .queryParam("controller", "authentication")
-                 .queryParam("create_account", "1")
+                .queryParam("controller", "authentication")
+                .queryParam("create_account", "1")
                 .get("?controller=authentication&create_account=1");
         System.out.println(getNewAccount.getBody().prettyPrint());
         System.out.println(cookieFilter.getCookieStore());
@@ -61,7 +63,7 @@ public class RegistrationPage {
     }
 
     @Test
-    public void alreadyRegisteredUser(){
+    public void alreadyRegisteredUser() {
 
         CookieFilter cookieFilter = new CookieFilter();
         HashMap<String, String> newUserCreds = new HashMap<String, String>();
